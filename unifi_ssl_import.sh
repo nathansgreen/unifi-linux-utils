@@ -60,17 +60,17 @@ printf "\nStarting UniFi Controller SSL Import...\n"
 
 # Check to see whether Let's Encrypt Mode (LE_MODE) is enabled
 
-if [[ ${LE_MODE} == "YES" || ${LE_MODE} == "yes" || ${LE_MODE} == "Y" || ${LE_MODE} == "y" || ${LE_MODE} == "TRUE" || ${LE_MODE} == "true" || ${LE_MODE} == "ENABLED" || ${LE_MODE} == "enabled" || ${LE_MODE} == 1 ]] ; then
+case "$LE_MODE" in (YES|yes|Y|y|TRUE|true|ENABLED|enabled|1)
 	LE_MODE=true
 	printf "\nRunning in Let's Encrypt Mode...\n"
 	PRIV_KEY=${LE_LIVE_DIR}/${UNIFI_HOSTNAME}/privkey.pem
 	CHAIN_FILE=${LE_LIVE_DIR}/${UNIFI_HOSTNAME}/fullchain.pem
-else
+;; (*)
 	LE_MODE=false
 	printf "\nRunning in Standard Mode...\n"
-fi
+esac
 
-if [[ ${LE_MODE} == "true" ]]; then
+if ${LE_MODE} ; then
 	# Check to see whether LE certificate has changed
 	printf "\nInspecting current SSL certificate...\n"
 	if md5sum -c "${LE_LIVE_DIR}/${UNIFI_HOSTNAME}/privkey.pem.md5" &>/dev/null; then
@@ -101,7 +101,7 @@ P12_TEMP=$(mktemp)
 printf "\nStopping UniFi Controller...\n"
 service "${UNIFI_SERVICE}" stop
 
-if [[ ${LE_MODE} == "true" ]]; then
+if ${LE_MODE} ; then
 	
 	# Write a new MD5 checksum based on the updated certificate	
 	printf "\nUpdating certificate MD5 checksum...\n"
